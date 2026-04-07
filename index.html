@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>팀매칭보드</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#fff;--sf:#F7F7F5;--sf2:#FBFBFA;--bd:#E8E5E0;--bh:#D3D1CC;--ac:#2F80ED;--al:#EBF3FE;--ad:#1A5DC7;--gn:#0F7B6C;--gl:#DBEDEA;--or:#D9730D;--ol:#FAEBDD;--rd:#E03E3E;--rl:#FBE4E4;--pu:#6940A5;--pl:#EDE4F7;--yw:#DFAB01;--yl:#FBF3DB;--tx:#37352F;--t2:#6B6B6B;--t3:#9B9A97;--f:'IBM Plex Sans KR',-apple-system,sans-serif}
+html{font-size:15px}body{font-family:var(--f);color:var(--tx);background:var(--bg);line-height:1.7;word-break:keep-all;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+.hd{padding:1.2rem 1rem .5rem;max-width:940px;margin:0 auto}.hd h1{font-size:1.4rem;font-weight:800}.hd .sub{font-size:.75rem;color:var(--t3);margin-top:.1rem}
+.nw{border-bottom:1px solid var(--bd);position:sticky;top:0;background:#ffffffee;backdrop-filter:blur(10px);z-index:100}
+.nv{display:flex;gap:0;max-width:940px;margin:0 auto;padding:0 1rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nv button{font-family:var(--f);font-size:.78rem;font-weight:500;padding:.5rem .7rem;background:0;color:var(--t2);border:none;border-bottom:2px solid transparent;cursor:pointer;transition:.12s;white-space:nowrap;flex-shrink:0}
+.nv button:hover{color:var(--tx);background:var(--sf)}.nv button.on{color:var(--tx);border-bottom-color:var(--tx);font-weight:700}
+.nv button.ap.on{color:var(--or);border-bottom-color:var(--or)}.nv button.bp.on{color:var(--gn);border-bottom-color:var(--gn)}
+.vw{display:none;max-width:940px;margin:0 auto;padding:1rem 1rem 5rem}.vw.on{display:block}
+.co{display:flex;gap:.5rem;padding:.7rem .9rem;border-radius:5px;margin-bottom:.8rem;font-size:.8rem;line-height:1.7}
+.co.bl{background:var(--al);color:var(--ad)}.co.pu{background:var(--pl);color:var(--pu)}.co.yw{background:var(--yl);color:#806B00}.co.gl{background:var(--gl);color:var(--gn)}.co.or{background:var(--ol);color:var(--or)}
+.co .ci{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.fc{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:1rem;margin-bottom:1rem}.fc h3{font-size:.85rem;font-weight:700;margin-bottom:.6rem}
+.fr{margin-bottom:.5rem}.fr label{display:block;font-size:.7rem;font-weight:600;color:var(--t2);margin-bottom:.15rem}
+.fi,.ft{width:100%;font-family:var(--f);font-size:.88rem;padding:.5rem .65rem;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:4px;outline:0;transition:.12s}
+.fi:focus,.ft:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(47,128,237,.08)}.fi::placeholder,.ft::placeholder{color:var(--t3)}
+.ft{resize:vertical;min-height:2.5rem;line-height:1.6}
+.bt{font-family:var(--f);font-size:.82rem;font-weight:600;padding:.45rem 1rem;border-radius:5px;cursor:pointer;transition:.12s;border:none;touch-action:manipulation}
+.bt-p{background:var(--ac);color:#fff}.bt-p:hover{background:var(--ad)}
+.bt-g{background:var(--gn);color:#fff}.bt-g:hover{background:#0A6359}
+.bt-u{background:var(--pu);color:#fff}.bt-u:hover{background:#5A35A0}
+.bt-o{background:0;color:var(--t2);border:1px solid var(--bd)}.bt-o:hover{background:var(--sf)}
+.bt-d{background:0;color:var(--rd);border:1px solid var(--bd);font-size:.72rem;padding:.3rem .6rem}.bt-d:hover{border-color:var(--rd);background:var(--rl)}
+.bt-sm{font-size:.74rem;padding:.3rem .6rem}
+.br{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem}
+.se{font-size:.76rem;font-weight:700;color:var(--t2);margin:1rem 0 .4rem;padding-bottom:.25rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.se .cn{font-size:.68rem;font-weight:600;background:var(--sf);color:var(--t3);padding:.1rem .45rem;border-radius:10px}
+.mb{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;background:var(--al);border:1px solid #C5DCF7;border-radius:6px;margin-bottom:.8rem;flex-wrap:wrap}
+.mb .av{width:28px;height:28px;border-radius:50%;background:var(--ac);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.8rem;flex-shrink:0}
+.mb .mi{flex:1;min-width:0}.mb .mn{font-weight:700;font-size:.85rem}.mb .mt{font-size:.78rem;color:var(--ad);font-weight:500}.mb .md{font-size:.73rem;color:var(--t2)}
+.mb .ma{display:flex;gap:.25rem;flex-shrink:0}
+.cd{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:.6rem .8rem;margin:.25rem 0;transition:.12s;position:relative}
+.cd:hover{border-color:var(--bh)}.cd.me{border-color:#C5DCF7;background:var(--al)}
+.cd .ct{display:flex;align-items:baseline;gap:.3rem;flex-wrap:wrap}
+.cd .cn2{font-size:.82rem;font-weight:700}.cd .cp{font-size:.78rem;font-weight:500;color:var(--ac);flex:1}
+.cd .cx{font-size:.73rem;color:var(--t2);margin-top:.05rem}
+.wish-check{position:absolute;top:.55rem;right:.6rem}
+.wish-check input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--pu)}
+.ct-box{border:2px solid var(--gn);background:rgba(15,123,108,.03);border-radius:6px;padding:.7rem .9rem;margin:.4rem 0}
+.ct-box .ct-h{font-size:.82rem;font-weight:700;color:var(--gn);margin-bottom:.2rem}.ct-box .ct-m{font-size:.78rem;color:var(--tx);line-height:1.8}
+.wc{border:1px solid #D3C4F0;background:rgba(105,64,165,.03);border-radius:6px;padding:.5rem .8rem;margin:.3rem 0}
+.wc .wh{font-size:.76rem;font-weight:700;color:var(--pu);margin-bottom:.15rem}.wc .wm{font-size:.76rem;color:var(--t2)}
+.a-team{border:1px solid var(--bd);border-radius:6px;margin:.4rem 0;padding:.7rem .9rem;background:var(--sf2)}
+.a-team .a-th{font-size:.8rem;font-weight:700;color:var(--pu);margin-bottom:.3rem;display:flex;align-items:center;justify-content:space-between}
+.a-team .a-mem{display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.25rem}
+.a-mem-tag{display:inline-flex;align-items:center;gap:.2rem;padding:.2rem .45rem;background:var(--pl);border:1px solid #D3C4F0;border-radius:4px;font-size:.73rem;font-weight:600;color:var(--pu)}
+.a-mem-tag .x{cursor:pointer;color:var(--rd);font-weight:700;margin-left:.15rem;font-size:.85rem}
+.a-unassigned{padding:.3rem .55rem;margin:.15rem;background:var(--ol);border:1px solid #E8C9A0;border-radius:4px;font-size:.73rem;font-weight:600;color:var(--or);cursor:pointer;display:inline-block;touch-action:manipulation}
+.a-unassigned:hover{background:#F7D9B0}
+.sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.35rem;margin:.6rem 0}
+.st{background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:.5rem;text-align:center}
+.st .n{font-size:1.3rem;font-weight:800;color:var(--ac)}.st .l{font-size:.65rem;color:var(--t3);margin-top:.05rem}
+.t2t{width:100%;border-collapse:collapse;margin-top:.4rem;font-size:.73rem}
+.t2t th{font-size:.64rem;font-weight:600;color:var(--t3);padding:.35rem .4rem;text-align:left;border-bottom:2px solid var(--bd)}
+.t2t td{padding:.3rem .4rem;border-bottom:1px solid var(--sf)}.t2t tr:hover td{background:var(--sf)}
+.empty{text-align:center;padding:1.5rem;color:var(--t3);font-size:.82rem}
+.toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%) translateY(80px);font-family:var(--f);font-size:.8rem;font-weight:600;padding:.45rem 1.2rem;background:var(--tx);color:#fff;border-radius:6px;z-index:999;transition:transform .25s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.sub-tabs{display:flex;gap:0;margin-bottom:.8rem;border-bottom:1px solid var(--bd);overflow-x:auto}
+.sub-tabs button{font-family:var(--f);font-size:.76rem;font-weight:500;padding:.35rem .7rem;background:0;color:var(--t2);border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.sub-tabs button.on{color:var(--tx);font-weight:700;border-bottom-color:var(--tx)}.sub-tabs button.wt.on{color:var(--pu);border-bottom-color:var(--pu)}
+@media(max-width:640px){html{font-size:14px}.cd .ct{flex-direction:column;gap:.05rem}.cd .cp{font-size:.75rem}.mb{flex-direction:column;align-items:flex-start;gap:.25rem}.mb .ma{width:100%;justify-content:flex-end}}
+</style>
+</head>
+<body>
+<div class="hd"><h1>🔗 팀매칭보드</h1><div class="sub">주제 등록 → 희망팀 신청 → 교사 확정</div></div>
+<div class="nw"><div class="nv" id="nv"></div></div>
+<div class="vw" id="v-welcome"></div>
+<div class="vw" id="v-class"></div>
+<div class="vw" id="v-board"></div>
+<div class="vw" id="v-admin"></div>
+<div class="toast" id="toast"></div>
+<script>
+const CL=[{id:'B',lb:'B반',rm:'3-1'},{id:'A',lb:'A반',rm:'3-2'},{id:'C',lb:'C반',rm:'3-3'},{id:'D2',lb:'D2반',rm:'3-4'},{id:'D1',lb:'D1반',rm:'3-5'},{id:'E',lb:'E반',rm:'3-6'}];
+const IDS=CL.map(c=>c.id);
+function gi(id){return CL.find(x=>x.id===id)||{lb:id,rm:''}}
+function gf(id){const c=gi(id);return c.lb+' '+c.rm}
+let D={},wishes={},confirmed={},me={name:'',cls:''};
+let classSubTab={},adminCls='B',adminEdit=null,adminAuth=false;
+const ADMIN_PW='0429';
+const DK='tmb8-data',MK='tmb8-me',WK='tmb8-wish',CK='tmb8-conf';
+
+async function load(){try{if(window.storage){let r=await window.storage.get(DK);if(r?.value)D=JSON.parse(r.value);r=await window.storage.get(MK);if(r?.value)me=JSON.parse(r.value);r=await window.storage.get(WK);if(r?.value)wishes=JSON.parse(r.value);r=await window.storage.get(CK);if(r?.value)confirmed=JSON.parse(r.value)}}catch(e){}IDS.forEach(c=>{if(!D[c])D[c]=[];if(!wishes[c])wishes[c]={};if(!confirmed[c])confirmed[c]=null})}
+async function sv(k,v){try{if(window.storage)await window.storage.set(k,JSON.stringify(v))}catch(e){}}
+async function saveAll(){await sv(DK,D);await sv(WK,wishes);await sv(CK,confirmed)}
+async function saveMe(){await sv(MK,me)}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
+
+// 상호매칭 기반 자연 팀 감지
+function detectTeams(c){
+  const w=wishes[c]||{},names=(D[c]||[]).map(s=>s.name);
+  const mutual={};names.forEach(n=>{mutual[n]=[]});
+  Object.entries(w).forEach(([a,list])=>{if(!list)return;list.forEach(b=>{if(w[b]&&w[b].includes(a)){if(!mutual[a].includes(b))mutual[a].push(b);if(!mutual[b].includes(a))mutual[b].push(a)}})});
+  const visited=new Set(),teams=[];
+  names.forEach(n=>{if(visited.has(n)||!mutual[n]||!mutual[n].length)return;const team=[],q=[n];visited.add(n);while(q.length){const cur=q.shift();team.push(cur);(mutual[cur]||[]).forEach(nb=>{if(!visited.has(nb)){visited.add(nb);q.push(nb)}})}if(team.length>=2)teams.push(team)});
+  return{teams,unassigned:names.filter(n=>!new Set(teams.flat()).has(n))};
+}
+
+function bNav(){let h='';CL.forEach(c=>{h+=`<button data-v="c-${c.id}" onclick="goC('${c.id}')">${c.lb}</button>`});h+=`<button data-v="board" class="bp" onclick="goB()">📊 현황</button>`;h+=`<button data-v="admin" class="ap" onclick="goA()">⚙️</button>`;document.getElementById('nv').innerHTML=h}
+function setAct(v){document.querySelectorAll('.vw').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.nv button').forEach(b=>b.classList.remove('on'));const b=document.querySelector(`.nv button[data-v="${v}"]`);if(b)b.classList.add('on')}
+
+// ═══ WELCOME ═══
+function goW(){setAct('');document.getElementById('v-welcome').classList.add('on');document.getElementById('v-welcome').innerHTML=`<div style="max-width:360px;margin:2rem auto;text-align:center"><div style="font-size:2.5rem">👋</div><h2 style="font-size:1.05rem;font-weight:700;margin:.4rem 0 1rem">반과 이름을 알려주세요</h2><div style="text-align:left"><label style="display:block;font-size:.73rem;font-weight:600;color:var(--t2);margin-bottom:.15rem">반</label><select id="w-c" style="width:100%;font-family:var(--f);font-size:.9rem;padding:.5rem;border:1px solid var(--bd);border-radius:4px;margin-bottom:.6rem">${CL.map(c=>`<option value="${c.id}">${c.lb} ${c.rm}</option>`).join('')}</select><label style="display:block;font-size:.73rem;font-weight:600;color:var(--t2);margin-bottom:.15rem">이름</label><input id="w-n" style="width:100%;font-family:var(--f);font-size:.9rem;padding:.5rem;border:1px solid var(--bd);border-radius:4px;margin-bottom:.7rem" placeholder="홍길동" maxlength="20"><button class="bt bt-p" style="width:100%" onclick="enter()">시작하기</button></div></div>`}
+async function enter(){const c=document.getElementById('w-c').value,n=document.getElementById('w-n').value.trim();if(!n){toast('이름 입력');return}me={name:n,cls:c};await saveMe();goC(c)}
+async function switchUser(){me={name:'',cls:''};await saveMe();goW()}
+
+// ═══ CLASS (학생) ═══
+function goC(c){
+  setAct('c-'+c);const el=document.getElementById('v-class');el.classList.add('on');
+  if(!classSubTab[c])classSubTab[c]='list';
+  const list=D[c]||[],myE=list.find(s=>s.name===me.name&&c===me.cls);
+  let h='';
+  // 내 바
+  if(me.name&&c===me.cls){
+    if(myE){h+=`<div class="mb"><div class="av">${esc(me.name[0])}</div><div class="mi"><div class="mn">${esc(me.name)}</div><div class="mt">${esc(myE.topic)}</div>${myE.desc?`<div class="md">${esc(myE.desc)}</div>`:''}</div><div class="ma"><button class="bt bt-sm bt-o" onclick="toggleF('${c}')">수정</button><button class="bt bt-sm bt-o" onclick="switchUser()">변경</button></div></div>`}
+    else{h+=`<div class="mb"><div class="av">${esc(me.name[0])}</div><div class="mi"><div class="mn">${esc(me.name)}</div><div class="md" style="color:var(--or)">주제를 등록해주세요</div></div><div class="ma"><button class="bt bt-sm bt-o" onclick="switchUser()">변경</button></div></div>`}
+  }else if(me.name){h+=`<div class="mb" style="background:var(--sf);border-color:var(--bd)"><div class="av" style="background:var(--t3)">${esc(me.name[0])}</div><div class="mi"><div class="mn">${esc(me.name)} <span style="font-weight:400;color:var(--t3);font-size:.73rem">(${gf(me.cls)})</span></div></div><div class="ma"><button class="bt bt-sm bt-o" onclick="switchUser()">변경</button></div></div>`}
+  // 확정 팀
+  const conf=confirmed[c];
+  if(conf&&me.cls===c&&me.name){const myT=conf.teams.find(t=>t.includes(me.name));if(myT){h+=`<div class="ct-box"><div class="ct-h">✅ 내 팀</div><div class="ct-m">${myT.map(n=>n===me.name?`<b style="color:var(--ac)">⭐${esc(n)}</b>`:esc(n)).join(', ')}</div></div>`}else{h+=`<div class="co or"><span class="ci">⏳</span><div>팀 미배정 — 선생님 조정 중</div></div>`}}
+  else if(me.cls===c&&me.name&&myE){h+=`<div class="co yw"><span class="ci">⏳</span><div>팀 배정 대기 중</div></div>`}
+  // 폼
+  const showF=(me.cls===c&&!myE);
+  h+=`<div class="fc" id="fm-${c}" style="${showF?'':'display:none'}"><h3>📝 주제 등록</h3><div class="fr"><label>이름</label><input class="fi" id="n-${c}" value="${esc(me.cls===c?me.name:'')}" placeholder="홍길동" maxlength="20"></div><div class="fr"><label>주제</label><input class="fi" id="t-${c}" value="${myE?esc(myE.topic):''}" placeholder="예: SNS와 청소년 정신건강" maxlength="100"></div><div class="fr"><label>설명</label><textarea class="ft" id="d-${c}" placeholder="연구하고 싶은 내용" maxlength="200">${myE?esc(myE.desc):''}</textarea></div><div class="br"><button class="bt bt-p" onclick="submit('${c}')">${myE?'수정':'등록'}</button>${myE?`<button class="bt bt-o" onclick="toggleF('${c}')">취소</button>`:''}</div></div>`;
+  // 탭
+  const tab=classSubTab[c];
+  h+=`<div class="sub-tabs"><button class="${tab==='list'?'on':''}" onclick="subTab('${c}','list')">📋 목록 (${list.length})</button><button class="wt ${tab==='wish'?'on':''}" onclick="subTab('${c}','wish')">💜 희망팀</button></div>`;
+  if(tab==='list'){if(!list.length)h+=`<div class="empty">아직 등록된 주제가 없습니다</div>`;else list.forEach(s=>{const isMe=(s.name===me.name&&c===me.cls);h+=`<div class="cd${isMe?' me':''}"><div class="ct"><span class="cn2">${isMe?'⭐ ':''}${esc(s.name)}</span><span class="cp">${esc(s.topic)}</span></div>${s.desc?`<div class="cx">${esc(s.desc)}</div>`:''}</div>`})}
+  else{h+=renderWish(c)}
+  el.innerHTML=h;
+}
+function renderWish(c){
+  const list=D[c]||[],myW=(wishes[c]||{})[me.name]||[];
+  if(!me.name||me.cls!==c)return`<div class="co yw"><span class="ci">⚠️</span><div>본인 반에서만 가능</div></div>`;
+  if(!list.find(s=>s.name===me.name))return`<div class="co yw"><span class="ci">⚠️</span><div>먼저 주제를 등록하세요</div></div>`;
+  let h=`<div class="co pu"><span class="ci">💜</span><div>함께 하고 싶은 학생을 체크하세요 (최대 4명). <b>서로 선택</b>하면 팀이 됩니다.</div></div>`;
+  const others=list.filter(s=>s.name!==me.name);
+  if(!others.length)return h+`<div class="empty">다른 학생 없음</div>`;
+  others.forEach(s=>{const ck=myW.includes(s.name);const they=(wishes[c]||{})[s.name]&&(wishes[c][s.name]).includes(me.name);h+=`<div class="cd" style="padding-right:2.8rem${they?';border-left:3px solid var(--pu)':''}"><div class="ct"><span class="cn2">${esc(s.name)}${they?' <span style="font-size:.63rem;color:var(--pu);font-weight:600">← 나를 선택함</span>':''}</span><span class="cp">${esc(s.topic)}</span></div>${s.desc?`<div class="cx">${esc(s.desc)}</div>`:''}<div class="wish-check"><input type="checkbox" data-w="${esc(s.name)}" ${ck?'checked':''}></div></div>`});
+  h+=`<div style="margin-top:.6rem"><button class="bt bt-u" onclick="saveW('${c}')">💜 저장</button></div>`;
+  if(myW.length)h+=`<div class="wc" style="margin-top:.6rem"><div class="wh">내 희망</div><div class="wm">${myW.map(n=>esc(n)).join(', ')}</div></div>`;
+  return h;
+}
+async function saveW(c){const sel=[];document.querySelectorAll('input[data-w]').forEach(cb=>{if(cb.checked)sel.push(cb.dataset.w)});if(sel.length>4){toast('최대 4명');return}if(!wishes[c])wishes[c]={};wishes[c][me.name]=sel;await sv(WK,wishes);goC(c);toast(`희망 ${sel.length}명 저장`)}
+function subTab(c,t){classSubTab[c]=t;goC(c)}
+function toggleF(c){const f=document.getElementById('fm-'+c);if(f)f.style.display=f.style.display==='none'?'block':'none'}
+async function submit(c){const name=document.getElementById('n-'+c).value.trim(),topic=document.getElementById('t-'+c).value.trim(),desc=document.getElementById('d-'+c).value.trim();if(!name){toast('이름');return}if(!topic){toast('주제');return}D[c]=D[c].filter(s=>s.name!==name);const now=new Date(),time=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;D[c].push({name,topic,desc,time});D[c].sort((a,b)=>a.name.localeCompare(b.name,'ko'));me={name,cls:c};await saveMe();await sv(DK,D);goC(c);toast('등록 완료')}
+
+// ═══ BOARD (전체 현황 — 확정된 반만) ═══
+function goB(){
+  setAct('board');const el=document.getElementById('v-board');el.classList.add('on');
+  const hasConf=CL.some(ci=>confirmed[ci.id]);
+  let h='';
+  if(!hasConf){h=`<div class="co yw"><span class="ci">📊</span><div>아직 확정된 팀이 없습니다. 선생님이 팀을 확정하면 여기에 표시됩니다.</div></div>`;el.innerHTML=h;return}
+  h+=`<div class="co gl"><span class="ci">📊</span><div>확정된 팀 현황입니다.</div></div>`;
+  CL.forEach(ci=>{
+    const c=ci.id,conf=confirmed[c];if(!conf)return;
+    const sts=D[c]||[];
+    h+=`<div class="se"><span>${ci.lb} ${ci.rm}</span><span class="cn">${conf.teams.length}팀</span></div>`;
+    conf.teams.forEach((t,i)=>{
+      h+=`<div class="ct-box"><div class="ct-h">팀 ${i+1} (${t.length}명)</div><div class="ct-m">`;
+      t.forEach(name=>{
+        const s=sts.find(x=>x.name===name);const isMe=(name===me.name&&c===me.cls);
+        h+=`<div style="margin:.15rem 0;font-size:.78rem;${isMe?'color:var(--ac);font-weight:700':''}"><span style="font-weight:600">${isMe?'⭐ ':''}${esc(name)}</span>${s?` — <span style="color:var(--t2)">${esc(s.topic)}</span>`:''}</div>`;
+      });
+      h+=`</div></div>`;
+    });
+    if(conf.unassigned&&conf.unassigned.length){h+=`<div style="margin:.3rem 0;padding:.4rem .7rem;background:var(--ol);border-radius:4px;font-size:.75rem;color:var(--or)">미배정: ${conf.unassigned.map(n=>esc(n)).join(', ')}</div>`}
+  });
+  el.innerHTML=h;
+}
+
+// ═══ ADMIN ═══
+function goA(){
+  if(!adminAuth){
+    setAct('admin');const el=document.getElementById('v-admin');el.classList.add('on');
+    el.innerHTML=`<div style="max-width:320px;margin:2rem auto;text-align:center"><div style="font-size:2.5rem">🔒</div><h2 style="font-size:1.05rem;font-weight:700;margin:.4rem 0 1rem">교사 인증</h2><div style="text-align:left"><label style="display:block;font-size:.73rem;font-weight:600;color:var(--t2);margin-bottom:.15rem">비밀번호</label><input id="a-pw" type="password" style="width:100%;font-family:var(--f);font-size:.9rem;padding:.5rem;border:1px solid var(--bd);border-radius:4px;margin-bottom:.7rem" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')authAdmin()"><button class="bt bt-p" style="width:100%" onclick="authAdmin()">인증</button></div></div>`;
+    setTimeout(()=>{const i=document.getElementById('a-pw');if(i)i.focus()},100);
+    return;
+  }
+  goAInner();
+}
+function authAdmin(){const pw=document.getElementById('a-pw').value;if(pw===ADMIN_PW){adminAuth=true;goAInner();toast('교사 인증 완료')}else{toast('비밀번호가 틀립니다')}}
+function goAInner(){
+  setAct('admin');const el=document.getElementById('v-admin');el.classList.add('on');
+  let total=0;IDS.forEach(c=>total+=(D[c]||[]).length);
+  let h=`<div class="fc"><h3>⚙️ 교사 전용</h3><div class="sts"><div class="st"><div class="n">${total}</div><div class="l">전체</div></div>${CL.map(c=>`<div class="st"><div class="n">${(D[c.id]||[]).length}</div><div class="l">${c.lb}</div></div>`).join('')}</div></div>`;
+  // 반 선택
+  h+=`<div class="fc"><h3>🔀 팀 구성</h3><div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin-bottom:.7rem"><select id="a-cls" style="font-family:var(--f);font-size:.84rem;padding:.4rem .6rem;border:1px solid var(--bd);border-radius:4px" onchange="adminCls=this.value;adminEdit=null;goA()">${CL.map(c=>`<option value="${c.id}" ${c.id===adminCls?'selected':''}>${c.lb} ${c.rm} (${(D[c.id]||[]).length}명)</option>`).join('')}</select><button class="bt bt-u" onclick="startEdit()">희망 기반 팀 생성</button>${confirmed[adminCls]?`<button class="bt bt-o" onclick="reEdit('${adminCls}')">재편집</button><span style="font-size:.72rem;color:var(--gn);font-weight:600">✅ 확정됨</span>`:''}</div>`;
+  // 희망 현황
+  const cw=wishes[adminCls]||{};const we=Object.entries(cw).filter(([,v])=>v&&v.length>0);
+  if(we.length){h+=`<div class="se" style="color:var(--pu)"><span>💜 희망 현황</span><span class="cn">${we.length}명</span></div>`;we.forEach(([name,wl])=>{const mu=wl.filter(b=>cw[b]&&cw[b].includes(name));h+=`<div class="wc"><div class="wh">${esc(name)}</div><div class="wm">${wl.map(n=>mu.includes(n)?`<b style="color:var(--gn)">🤝${esc(n)}</b>`:esc(n)).join(', ')}</div></div>`})}
+  // 편집
+  if(adminEdit&&adminEdit.cls===adminCls){h+=renderEdit()}
+  h+=`</div>`;
+  // 확정 현황
+  if(confirmed[adminCls]){const conf=confirmed[adminCls];h+=`<div class="fc"><h3>✅ ${gf(adminCls)} 확정 팀</h3>`;conf.teams.forEach((t,i)=>{h+=`<div class="ct-box"><div class="ct-h">팀 ${i+1} (${t.length}명)</div><div class="ct-m">${t.map(n=>esc(n)).join(', ')}</div></div>`});if(conf.unassigned&&conf.unassigned.length){h+=`<div style="padding:.3rem .6rem;background:var(--ol);border-radius:4px;font-size:.75rem;color:var(--or);margin-top:.3rem">미배정: ${conf.unassigned.map(n=>esc(n)).join(', ')}</div>`}h+=`<div class="br"><button class="bt bt-o" onclick="exportXL('${adminCls}')">📊 엑셀</button><button class="bt bt-d" onclick="unconf('${adminCls}')">확정 취소</button></div></div>`}
+  // 전체 목록
+  h+=`<div class="fc"><h3>📋 전체 주제</h3>`;CL.forEach(ci=>{const c=ci.id,list=D[c]||[];if(!list.length)return;h+=`<div class="se"><span>${ci.lb} ${ci.rm}</span><span class="cn">${list.length}명</span></div><table class="t2t"><thead><tr><th>#</th><th>이름</th><th>주제</th><th>희망</th></tr></thead><tbody>`;list.forEach((s,i)=>{const w=(wishes[c]||{})[s.name]||[];h+=`<tr><td style="color:var(--t3)">${i+1}</td><td style="font-weight:600">${esc(s.name)}</td><td style="color:var(--ac)">${esc(s.topic)}</td><td style="font-size:.7rem;color:var(--pu)">${w.join(', ')}</td></tr>`});h+='</tbody></table>'});
+  h+=`<div class="br" style="margin-top:.6rem"><button class="bt bt-d" onclick="resetAll()">전체 초기화</button></div></div>`;
+  el.innerHTML=h;
+}
+
+function startEdit(){const c=adminCls;if((D[c]||[]).length<2){toast('최소 2명');return}const r=detectTeams(c);adminEdit={cls:c,teams:r.teams.map(t=>[...t]),unassigned:[...r.unassigned]};goA();toast(`상호선택 ${r.teams.length}팀, 미배정 ${r.unassigned.length}명`)}
+function reEdit(c){const conf=confirmed[c];if(!conf)return;const allNames=(D[c]||[]).map(s=>s.name);const inTeams=new Set(conf.teams.flat());adminEdit={cls:c,teams:conf.teams.map(t=>[...t]),unassigned:allNames.filter(n=>!inTeams.has(n))};goA();toast('재편집 모드')}
+
+function renderEdit(){
+  const e=adminEdit;if(!e)return'';
+  let h=`<div class="se"><span>팀 편집</span></div><div class="co bl"><span class="ci">💡</span><div>미배정 클릭→마지막 팀에 추가 / ✕→미배정으로 / 새 팀 추가 가능</div></div>`;
+  if(e.unassigned.length){h+=`<div style="margin-bottom:.6rem"><span style="font-size:.75rem;font-weight:700;color:var(--or)">미배정 (${e.unassigned.length}명):</span><div style="margin-top:.2rem;display:flex;flex-wrap:wrap;gap:.2rem">`;e.unassigned.forEach((n,i)=>{h+=`<span class="a-unassigned" onclick="aAdd(${i})">${esc(n)}</span>`});h+=`</div></div>`}
+  e.teams.forEach((t,ti)=>{h+=`<div class="a-team"><div class="a-th"><span>팀 ${ti+1} (${t.length}명)</span><button class="bt bt-d" onclick="aDelT(${ti})" style="font-size:.63rem">삭제</button></div><div class="a-mem">${t.map((n,ni)=>`<span class="a-mem-tag">${esc(n)}<span class="x" onclick="aRem(${ti},${ni})">✕</span></span>`).join('')}</div></div>`});
+  h+=`<div class="br"><button class="bt bt-o" onclick="aNewT()">+ 새 팀</button><button class="bt bt-g" onclick="aConfirm()">✅ 확정</button><button class="bt bt-d" onclick="adminEdit=null;goA()">취소</button></div>`;
+  return h;
+}
+function aAdd(i){const e=adminEdit;if(!e)return;if(!e.teams.length)e.teams.push([]);const last=e.teams[e.teams.length-1];if(last.length>=6){toast('팀이 꽉 참 — 새 팀 만드세요');return}last.push(e.unassigned[i]);e.unassigned.splice(i,1);goA()}
+function aRem(ti,ni){const e=adminEdit;e.unassigned.push(e.teams[ti][ni]);e.teams[ti].splice(ni,1);if(!e.teams[ti].length)e.teams.splice(ti,1);goA()}
+function aDelT(ti){const e=adminEdit;e.unassigned.push(...e.teams[ti]);e.teams.splice(ti,1);goA()}
+function aNewT(){if(!adminEdit)return;adminEdit.teams.push([]);goA();toast('빈 팀 추가')}
+async function aConfirm(){if(!adminEdit)return;const c=adminEdit.cls;confirmed[c]={teams:adminEdit.teams.filter(t=>t.length>0),unassigned:[...adminEdit.unassigned],at:new Date().toISOString()};await sv(CK,confirmed);adminEdit=null;goA();toast(`${gf(c)} 확정 — 학생 공개`)}
+async function unconf(c){if(!confirm('확정 취소?'))return;confirmed[c]=null;await sv(CK,confirmed);goA();toast('취소됨')}
+
+function exportXL(c){
+  const conf=confirmed[c];if(!conf){toast('확정 팀 없음');return}
+  const ci=gi(c),sts=D[c]||[],wb=XLSX.utils.book_new();
+  const rows=[['팀','이름','주제','설명','희망팀원']];
+  conf.teams.forEach((t,ti)=>{t.forEach(name=>{const s=sts.find(x=>x.name===name);const w=(wishes[c]||{})[name]||[];rows.push([`팀${ti+1}`,name,s?s.topic:'',s?s.desc:'',w.join(', ')])})});
+  if(conf.unassigned)conf.unassigned.forEach(name=>{const s=sts.find(x=>x.name===name);const w=(wishes[c]||{})[name]||[];rows.push(['미배정',name,s?s.topic:'',s?s.desc:'',w.join(', ')])});
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:8},{wch:10},{wch:35},{wch:40},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws,`${ci.lb} ${ci.rm}`);
+  XLSX.writeFile(wb,`팀매칭_${ci.lb}_${new Date().toISOString().slice(0,10)}.xlsx`);toast('엑셀 완료')}
+async function resetAll(){if(!confirm('전체 초기화?'))return;if(!confirm('되돌릴 수 없습니다'))return;IDS.forEach(c=>{D[c]=[];wishes[c]={};confirmed[c]=null});adminEdit=null;await saveAll();goA();toast('초기화')}
+
+(async()=>{await load();IDS.forEach(c=>{if(!D[c])D[c]=[];if(!wishes[c])wishes[c]={};if(!confirmed[c])confirmed[c]=null});bNav();if(me.name&&me.cls)goC(me.cls);else goW()})();
+</script>
+</body>
+</html>
