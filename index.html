@@ -103,7 +103,7 @@ let syncTimer = null;
 const SYNC_INTERVAL = 8000;
 let isSyncing = false;
 
-// ─── 서버 통신 (반별 독립 키: data_B, wishes_B, confirmed_B) ───
+// ─── 서버 통신 ───
 async function serverGet() {
   if (!IS_CONFIGURED) return null;
   try {
@@ -119,30 +119,44 @@ async function serverGet() {
   }
 }
 
-async function serverSet(key, value) {
-  if (!IS_CONFIGURED) return false;
+async function serverPost(payload) {
+  if (!IS_CONFIGURED) return null;
   try {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ key, value })
+      body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const r = await res.json();
     updateConnBadge('on');
-    return r.ok;
+    if (!r.ok) { console.error('serverPost fail:', r.error); toast('저장 실패'); }
+    return r;
   } catch(e) {
-    console.error('serverSet:', e);
+    console.error('serverPost:', e);
     updateConnBadge('off');
     toast('저장 실패 — 네트워크 확인');
-    return false;
+    return null;
   }
 }
 
-// 반별 독립 저장/로드 — B반 데이터는 data_B 키에만 저장
-async function saveClassData(c) { await serverSet('data_'+c, D[c]||[]); }
-async function saveClassWishes(c) { await serverSet('wishes_'+c, wishes[c]||{}); }
-async function saveClassConfirmed(c) { await serverSet('confirmed_'+c, confirmed[c]); }
+// ─── 원자적 서버 연산 (다른 반 데이터 안 건드림) ───
+async function serverUpsertStudent(c, student) {
+  return serverPost({ action: 'upsert_student', classId: c, student });
+}
+async function serverDeleteStudent(c, name) {
+  return serverPost({ action: 'delete_student', classId: c, name });
+}
+async function serverSetWishes(c, name, wishList) {
+  return serverPost({ action: 'set_wishes', classId: c, name, wishes: wishList });
+}
+async function serverDeleteWishes(c, name) {
+  return serverPost({ action: 'delete_wishes', classId: c, name });
+}
+async function serverSetKey(key, value) {
+  return serverPost({ action: 'set', key, value });
+}
+async function saveClassConfirmed(c) { await serverSetKey('confirmed_'+c, confirmed[c]); }
 
 // ─── 동기화 ───
 async function syncFromServer() {
@@ -302,7 +316,7 @@ async function saveW(c){
   if(sel.length>4){toast('최대 4명');return}
   if(!wishes[c])wishes[c]={};
   wishes[c][me.name]=sel;
-  await saveClassWishes(c); // 해당 반만 저장
+  await serverSetWishes(c, me.name, sel); // 서버에서 이 학생 희망만 원자적 변경
   goC(c);toast(`희망 ${sel.length}명 저장`);
 }
 // 학생 본인 주제 삭제
@@ -310,13 +324,7 @@ async function delMyTopic(c) {
   if (!confirm('등록한 주제를 삭제할까요?')) return;
   D[c] = (D[c]||[]).filter(s => s.name !== me.name);
   if (wishes[c] && wishes[c][me.name]) delete wishes[c][me.name];
-  Object.keys(wishes[c]||{}).forEach(n => {
-    if (wishes[c][n] && Array.isArray(wishes[c][n])) {
-      wishes[c][n] = wishes[c][n].filter(w => w !== me.name);
-    }
-  });
-  await saveClassData(c);
-  await saveClassWishes(c);
+  await serverDeleteStudent(c, me.name); // 서버에서 원자적 삭제 (희망도 같이 처리)
   goC(c); toast('삭제 완료');
 }
 function subTab(c,t){classSubTab[c]=t;goC(c)}
@@ -324,12 +332,15 @@ function toggleF(c){const f=document.getElementById('fm-'+c);if(f)f.style.displa
 async function submit(c){
   const name=document.getElementById('n-'+c).value.trim(),topic=document.getElementById('t-'+c).value.trim(),desc=document.getElementById('d-'+c).value.trim();
   if(!name){toast('이름');return}if(!topic){toast('주제');return}
-  D[c]=(D[c]||[]).filter(s=>s.name!==name);
   const now=new Date(),time=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  D[c].push({name,topic,desc,time});
+  const student = {name, topic, desc, time};
+  // 로컬 반영
+  D[c]=(D[c]||[]).filter(s=>s.name!==name);
+  D[c].push(student);
   D[c].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
   me={name,cls:c};saveMe();
-  await saveClassData(c); // 해당 반만 저장
+  // 서버: 이 학생만 원자적 추가 (다른 학생 데이터 안 건드림)
+  await serverUpsertStudent(c, student);
   goC(c);toast('등록 완료');
 }
 
@@ -409,18 +420,8 @@ function goAInner(){
 async function delStudent(c, name) {
   if (!confirm(`${gf(c)} "${name}" 학생을 삭제할까요?`)) return;
   D[c] = (D[c]||[]).filter(s => s.name !== name);
-  // 해당 학생의 희망도 삭제
-  if (wishes[c] && wishes[c][name]) {
-    delete wishes[c][name];
-  }
-  // 다른 학생의 희망 목록에서도 제거
-  Object.keys(wishes[c]||{}).forEach(n => {
-    if (wishes[c][n] && Array.isArray(wishes[c][n])) {
-      wishes[c][n] = wishes[c][n].filter(w => w !== name);
-    }
-  });
-  await saveClassData(c);
-  await saveClassWishes(c);
+  if (wishes[c] && wishes[c][name]) delete wishes[c][name];
+  await serverDeleteStudent(c, name); // 서버에서 원자적 삭제
   goA();
   toast(`${name} 삭제됨`);
 }
@@ -461,9 +462,9 @@ async function resetAll(){
   if(!confirm('전체 초기화?'))return;if(!confirm('되돌릴 수 없습니다'))return;
   for (const c of IDS) {
     D[c]=[];wishes[c]={};confirmed[c]=null;
-    await saveClassData(c);
-    await saveClassWishes(c);
-    await saveClassConfirmed(c);
+    await serverSetKey('data_'+c, []);
+    await serverSetKey('wishes_'+c, {});
+    await serverSetKey('confirmed_'+c, null);
   }
   adminEdit=null;goA();toast('초기화');
 }
